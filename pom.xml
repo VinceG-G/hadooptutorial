@@ -13,6 +13,53 @@
     <parquet.version>1.6.0rc3</parquet.version>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>mediav-central</id>
+      <name>Central Repository</name>
+      <url>https://maven.corp.mediav.com/nexus/content/repositories/central/</url>
+      <layout>default</layout>
+    </repository>
+    <repository>
+      <id>mediav-releases</id>
+      <name>Releases Repository</name>
+      <url>https://maven.corp.mediav.com/nexus/content/repositories/releases/</url>
+      <layout>default</layout>
+    </repository>
+    <repository>
+      <id>mediav-snapshots</id>
+      <name>Snapshots Repository</name>
+      <url>https://maven.corp.mediav.com/nexus/content/repositories/snapshots/</url>
+      <layout>default</layout>
+    </repository>
+    <repository>
+      <id>mediav-thirdparty</id>
+      <name>Third Party Repository</name>
+      <url>https://maven.corp.mediav.com/nexus/content/repositories/thirdparty/</url>
+      <layout>default</layout>
+    </repository>
+    <repository>
+      <id>cloudera</id>
+      <url>https://maven.corp.mediav.com/nexus/content/repositories/cloudera/</url>
+    </repository>
+    <repository>
+      <id>twttr</id>
+      <url>http://maven.corp.mediav.com/nexus/content/repositories/Twttr/</url>
+    </repository>
+    <repository>
+      <id>ansj</id>
+      <url>http://maven.ansj.org</url>
+    </repository>
+    <repository>
+      <id>bitwalker.user-agent-utils.mvn.repo</id>
+      <url>https://raw.githubusercontent.com/HaraldWalker/user-agent-utils/mvn-repo/</url>
+      <!-- use snapshot version -->
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.hadoop</groupId>

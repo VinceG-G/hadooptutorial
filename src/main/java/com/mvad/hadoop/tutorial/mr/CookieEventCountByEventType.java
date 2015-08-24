@@ -6,6 +6,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -26,31 +27,57 @@ import java.io.IOException;
  */
 public class CookieEventCountByEventType extends Configured implements Tool {
 
+  public static class CookieEventMapper extends Mapper<Object, CookieEvent, IntWritable, LongWritable> {
 
-  public enum EVENTTYPE {
-    S, C, T, V, OTHER
-  }
-
-  public static class CookieEventMapper extends Mapper<Object, CookieEvent, Text, IntWritable> {
-
-    private final static IntWritable one = new IntWritable(1);
-    private Text eventType = new Text();
+    private final static LongWritable one = new LongWritable(1);
+    private IntWritable eventType = new IntWritable();
 
     @Override
     protected void map(Object key, CookieEvent value, Context context) throws IOException, InterruptedException {
-
       // Fill in Your code here
+      int e = value.getEventType();
+      eventType.set(e);
+      context.getCounter("EventTypeCount", String.valueOf(e)).increment(1);
+      context.write(eventType, one);
     }
   }
 
-  public static class IntSumReducer extends Reducer<IntWritable, IntWritable, IntWritable, IntWritable> {
+  public static class IntSumReducer extends Reducer<IntWritable, LongWritable, Text, LongWritable> {
 
-    private IntWritable result = new IntWritable();
+    private Text resultKey = new Text();
+    private LongWritable resultValue = new LongWritable();
+
+    public static String eventTypeInt2String(int i) {
+      String res;
+      switch (i) {
+        case 99:
+          res = new String("c");
+          break;
+        case 115:
+          res = new String("s");
+          break;
+        case 116:
+          res = new String("t");
+          break;
+        case 200:
+          res = new String("u");
+          break;
+        default:
+          res = new String("other");
+      };
+      return res;
+    }
 
     @Override
-    protected void reduce(IntWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-
+    protected void reduce(IntWritable key, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException {
       // Fill in Your code here
+      int sum = 0;
+      for (LongWritable value : values) {
+        sum += value.get();
+      }
+      resultKey.set(eventTypeInt2String(key.get()));
+      resultValue.set(sum);
+      context.write(resultKey, resultValue);
     }
   }
 
@@ -74,7 +101,7 @@ public class CookieEventCountByEventType extends Configured implements Tool {
     job.setCombinerClass(IntSumReducer.class);
     job.setReducerClass(IntSumReducer.class);
     job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(IntWritable.class);
+    job.setOutputValueClass(LongWritable.class);
 
     // set InputFormatClass to be DelegateCombineFileInputFormat to Combine Small Splits
     job.setInputFormatClass(DelegateCombineFileInputFormat.class);
