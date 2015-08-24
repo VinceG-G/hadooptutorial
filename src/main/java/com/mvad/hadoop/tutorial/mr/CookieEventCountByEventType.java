@@ -27,25 +27,10 @@ import java.io.IOException;
  */
 public class CookieEventCountByEventType extends Configured implements Tool {
 
-  public static class CookieEventMapper extends Mapper<Object, CookieEvent, IntWritable, LongWritable> {
+  public static class CookieEventMapper extends Mapper<Object, CookieEvent, Text, LongWritable> {
 
     private final static LongWritable one = new LongWritable(1);
-    private IntWritable eventType = new IntWritable();
-
-    @Override
-    protected void map(Object key, CookieEvent value, Context context) throws IOException, InterruptedException {
-      // Fill in Your code here
-      int e = value.getEventType();
-      eventType.set(e);
-      context.getCounter("EventTypeCount", String.valueOf(e)).increment(1);
-      context.write(eventType, one);
-    }
-  }
-
-  public static class IntSumReducer extends Reducer<IntWritable, LongWritable, Text, LongWritable> {
-
-    private Text resultKey = new Text();
-    private LongWritable resultValue = new LongWritable();
+    private Text eventType = new Text();
 
     public static String eventTypeInt2String(int i) {
       String res;
@@ -69,13 +54,28 @@ public class CookieEventCountByEventType extends Configured implements Tool {
     }
 
     @Override
-    protected void reduce(IntWritable key, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException {
+    protected void map(Object key, CookieEvent value, Context context) throws IOException, InterruptedException {
+      // Fill in Your code here
+      int e = value.getEventType();
+      eventType.set(eventTypeInt2String(e));
+      context.getCounter("EventTypeCount", String.valueOf(e)).increment(1);
+      context.write(eventType, one);
+    }
+  }
+
+  public static class IntSumReducer extends Reducer<Text, LongWritable, Text, LongWritable> {
+
+    private Text resultKey = new Text();
+    private LongWritable resultValue = new LongWritable();
+
+    @Override
+    protected void reduce(Text key, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException {
       // Fill in Your code here
       long sum = 0;
       for (LongWritable value : values) {
         sum += value.get();
       }
-      resultKey.set(eventTypeInt2String(key.get()));
+      resultKey.set(key);
       resultValue.set(sum);
       context.write(resultKey, resultValue);
     }
@@ -98,8 +98,6 @@ public class CookieEventCountByEventType extends Configured implements Tool {
     job.setJobName("CookieEventCountByEventType");
     job.setJarByClass(CookieEventCountByEventType.class);
     job.setMapperClass(CookieEventMapper.class);
-    job.setMapOutputKeyClass(IntWritable.class);
-    job.setMapOutputValueClass(LongWritable.class);
     job.setCombinerClass(IntSumReducer.class);
     job.setReducerClass(IntSumReducer.class);
     job.setOutputKeyClass(Text.class);
