@@ -71,7 +71,7 @@ public class CookieEventCountByEventType extends Configured implements Tool {
     @Override
     protected void reduce(IntWritable key, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException {
       // Fill in Your code here
-      int sum = 0;
+      long sum = 0;
       for (LongWritable value : values) {
         sum += value.get();
       }
@@ -98,6 +98,8 @@ public class CookieEventCountByEventType extends Configured implements Tool {
     job.setJobName("CookieEventCountByEventType");
     job.setJarByClass(CookieEventCountByEventType.class);
     job.setMapperClass(CookieEventMapper.class);
+    job.setMapOutputKeyClass(IntWritable.class);
+    job.setMapOutputValueClass(LongWritable.class);
     job.setCombinerClass(IntSumReducer.class);
     job.setReducerClass(IntSumReducer.class);
     job.setOutputKeyClass(Text.class);
